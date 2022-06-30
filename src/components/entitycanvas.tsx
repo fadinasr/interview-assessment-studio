@@ -17,7 +17,7 @@ export const EntityCanvas = observer(() => {
   return (
     <div>
       {entityStore.entities.map((entity) => (
-        <Entity entity={entity} />
+        <Entity entity={entity} key={entity.id}/>
       ))}
     </div>
   );
