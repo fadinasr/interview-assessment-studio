@@ -12,7 +12,7 @@ export const App = observer(() => {
       entityStore.addEntity(
         entityName,
         Math.random() * 1000,
-        Math.random() * 1000
+        Math.random() * 1000,
       );
     }
   };

@@ -1,7 +1,9 @@
 [
   {
     "id": 0,
-    "name": "Car"
+    "name": "Car",
+    "width": 50,
+    "height": 25
   },
   {
     "id": 1,
