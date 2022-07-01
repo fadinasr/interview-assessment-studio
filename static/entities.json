@@ -1,7 +1,18 @@
-[{
+[
+  {
     "id": 0,
     "name": "Car"
-}, {
+  },
+  {
     "id": 1,
     "name": "Wheels"
-}]
+  },
+  {
+    "id": 2,
+    "name": "Seats"
+  },
+  {
+    "id": 3,
+    "name": "Windows"
+  }
+]

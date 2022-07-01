@@ -25,6 +25,18 @@ describe("Entity store", () => {
     expect(store.entities[0].y).toEqual(100);
   });
 
+  it("should load entities from mock data services", () => {
+    const store = new EntityStore();
+    store.loadMockData();
+
+    expect(store.entities.length).toBeGreaterThan(0);
+    expect(typeof store.entities).toEqual('object');
+    expect(store.entities[0]).toHaveProperty('id');
+    expect(store.entities[0]).toHaveProperty('name');
+    expect(store.entities[0]).toHaveProperty('x');
+    expect(store.entities[0]).toHaveProperty('y');
+  });
+
   it("should add entity", () => {
     const store = new EntityStore();
     store.addEntity("Foo", 42, 0);
