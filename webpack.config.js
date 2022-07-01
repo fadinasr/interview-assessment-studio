@@ -18,6 +18,12 @@ module.exports = {
     extensions: [".tsx", ".ts", ".js"],
   },
   plugins: [
+    // Todo: use the below Webpack plugin to copy files from the static directory after building (if needed!)
+    // new CopyWebpackPlugin({
+    //   patterns: [
+    //     { from: 'static' }
+    //   ]
+    // }),
     new HtmlWebpackPlugin({
       title: "Development",
     }),
