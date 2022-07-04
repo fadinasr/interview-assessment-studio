@@ -202,6 +202,18 @@ const Entity = observer((props: EntityProps) => {
     await close();
   };
 
+  // Removing an attribute from the entity
+  const removeAttribute = async (id: number) => {
+    // Clone attributes array
+    let attributesClone = [...attributes];
+
+    // Return the attributes except the deleted one
+    attributesClone = attributesClone.filter(item => item.id !== id);
+
+    // Set new Array
+    setAttributes(attributesClone);
+  };
+
   return <div key={`Entity: ${name}-${id}`} ref={drag} style={Object.assign({}, entityContainerStyle, {
     left: x,
     top: y,
@@ -225,6 +237,7 @@ const Entity = observer((props: EntityProps) => {
                   <span>{attribute.name}</span>
                   <span>{attribute.type}</span>
                 </div>
+                <button onClick={() => removeAttribute(attribute.id)}>-</button>
               </div>
             ))
           }
