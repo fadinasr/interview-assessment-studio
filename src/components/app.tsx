@@ -6,9 +6,13 @@ import { EntitiesContext } from "../index";
 export const App = observer(() => {
   const entityStore = useContext(EntitiesContext);
 
+  const entityNameExists = (name: string) => {
+    return entityStore.entities.find(entity => entity.name === name);
+  }
+
   const onAddEntity = () => {
     const entityName = prompt("Name of the new entity", "");
-    if (entityName) {
+    if (entityName && !entityNameExists(entityName)) {
       entityStore.addEntity(
         entityName,
         Math.random() * 1000,
