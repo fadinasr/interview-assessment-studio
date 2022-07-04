@@ -87,10 +87,16 @@ export const EntityCanvas = observer(() => {
     [],
   );
 
+  const removeEntity = (id: number) => {
+    let entitiesClone = [...entities];
+    entitiesClone = entitiesClone.filter(entity => entity.id !== id);
+    setEntities(entitiesClone);
+  };
+
   return (
     <div ref={drop} style={{ width: "100%", height: "100%" }}>
       {entities.map((entity) => (
-        <Entity entity={entity} key={entity.id} />
+        <Entity entity={entity} key={entity.id} removeEntity={() => removeEntity(entity.id)} />
       ))}
     </div>
   );
@@ -98,6 +104,7 @@ export const EntityCanvas = observer(() => {
 
 type EntityProps = {
   entity: EntityData;
+  removeEntity: (id: number) => void;
 };
 
 interface AttributeInterface {
@@ -224,6 +231,7 @@ const Entity = observer((props: EntityProps) => {
         </div>
       </div>
       <button style={entityButtonStyle} onClick={open}>Add Attribute</button>
+      <button style={entityButtonStyle} onClick={() => props.removeEntity(id)}>Remove Entity</button>
     </div>
     <Modal>
       <div style={modalStyle}>
