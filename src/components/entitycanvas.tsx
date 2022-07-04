@@ -1,29 +1,38 @@
-import React, { useContext, useState } from "react";
+import React, { CSSProperties, useCallback, useContext, useState } from "react";
 import { observer } from "mobx-react";
 import { Entity as EntityData, EntityStore } from "../stores/entitystore";
 import { EntitiesContext } from "../index";
 import { useModal } from "react-hooks-use-modal";
+import { DragSourceMonitor, useDrag, useDrop } from "react-dnd";
 
-const entityContainerStyle = {
+export const ItemTypes = {
+  ENTITY: "entity",
+};
+
+const entityContainerStyle: CSSProperties = {
   position: "absolute" as const,
 };
 
-const entityBaseStyle = {
+const entityBaseStyle: CSSProperties = {
   border: "1px solid cornflowerblue",
   borderRadius: 4,
   padding: 5,
   marginBottom: 5,
 };
 
-const attributesContainerStyle = {
+const attributesContainerStyle: CSSProperties = {
   display: "flex",
   flexDirection: "column" as const,
   paddingTop: 5,
 };
 
-const attributesRowStyle = { display: "flex", flexDirection: "row" as const, justifyContent: "space-between" };
+const attributesRowStyle: CSSProperties = {
+  display: "flex",
+  flexDirection: "row" as const,
+  justifyContent: "space-between",
+};
 
-const entityButtonStyle = {
+const entityButtonStyle: CSSProperties = {
   background: "cornflowerblue",
   borderRadius: 4,
   borderWidth: 0,
@@ -31,7 +40,7 @@ const entityButtonStyle = {
   padding: 5,
 };
 
-const modalStyle = {
+const modalStyle: CSSProperties = {
   background: "#fff",
   width: "50rem",
   height: "20rem",
@@ -41,10 +50,46 @@ const modalStyle = {
 
 export const EntityCanvas = observer(() => {
   const entityStore = useContext(EntitiesContext);
+  const [entities, setEntities] = useState(entityStore.entities);
+
+  const moveEntity = useCallback(
+    (id: number, left: number, top: number) => {
+      let entitiesClone = [...entities];
+      const item = entitiesClone.find(item => item.id === id);
+      if (item) {
+        item.x = left;
+        item.y = top;
+      }
+      setEntities(entitiesClone);
+    },
+    [entities],
+  );
+
+  const [, drop] = useDrop(
+    () => ({
+      accept: ItemTypes.ENTITY,
+      drop(item, monitor) {
+        const delta = monitor.getDifferenceFromInitialOffset() as {
+          x: number
+          y: number
+        };
+
+        // @ts-ignore
+        let left = Math.round(item.x + delta.x);
+        // @ts-ignore
+        let top = Math.round(item.y + delta.y);
+
+        // @ts-ignore
+        moveEntity(item.id, left, top);
+        return undefined;
+      },
+    }),
+    [],
+  );
 
   return (
-    <div>
-      {entityStore.entities.map((entity) => (
+    <div ref={drop} style={{ width: "100%", height: "100%" }}>
+      {entities.map((entity) => (
         <Entity entity={entity} key={entity.id} />
       ))}
     </div>
@@ -56,6 +101,7 @@ type EntityProps = {
 };
 
 interface AttributeInterface {
+  id: number;
   name: string;
   type: string;
 }
@@ -76,11 +122,25 @@ interface SelectOptionInterface {
 }
 
 const Entity = observer((props: EntityProps) => {
+  const { id, x, y, width, height, name } = props.entity;
+
+  const [{ isDragging }, drag] = useDrag(() => ({
+      item: props.entity,
+      type: ItemTypes.ENTITY,
+      collect: (monitor: DragSourceMonitor) => ({
+        isDragging: monitor.isDragging(),
+      }),
+    }),
+    [id, x, y],
+  );
+
   // New Attribute state initialization
   const [newAttribute, setNewAttribute] = useState<AttributeInterface>({
+    id: -1,
     name: "",
     type: AttributeTypesEnum.string,
   });
+
   // List of Attributes state initialization
   const [attributes, setAttributes] = useState<AttributeInterface[]>([]);
 
@@ -100,7 +160,6 @@ const Entity = observer((props: EntityProps) => {
   // @ts-ignore
   const handleOnChange = (e) => {
     const { name, value } = e.target;
-    // @ts-ignore
     setNewAttribute({
       ...newAttribute,
       [name]: value,
@@ -110,21 +169,24 @@ const Entity = observer((props: EntityProps) => {
   // Adding a new attribute to the entity
   const addNewAttribute = async () => {
     // Clone attributes array
-    const newArray = [...attributes];
+    const attributesClone = [...attributes];
 
     // Check if new attribute exists
-    const index = newArray.findIndex(item => item.name == newAttribute.name);
+    const index = attributesClone.findIndex(item => item.name === newAttribute.name);
+
 
     // Add the new attribute if it doesn't already exist
-    if (index) {
-      newArray.push(newAttribute);
+    if (index === -1) {
+      newAttribute.id = attributes.length + 1; // incrementing attribute ids
+      attributesClone.push(newAttribute);
     }
 
     // Set new Array
-    setAttributes(newArray);
+    setAttributes(attributesClone);
 
     // Clear input and return new attribute to default state
     setNewAttribute({
+      id: -1,
       name: "",
       type: AttributeTypesEnum.string,
     });
@@ -133,27 +195,31 @@ const Entity = observer((props: EntityProps) => {
     await close();
   };
 
-  return <>
-    <div style={Object.assign({}, entityContainerStyle, {
-      left: props.entity.y,
-      top: props.entity.x,
-      width: props.entity.width,
-      height: props.entity.height,
-    })}>
+  return <div key={`Entity: ${name}-${id}`} ref={drag} style={Object.assign({}, entityContainerStyle, {
+    left: x,
+    top: y,
+    width,
+    height,
+    opacity: isDragging ? 0.5 : 1,
+    cursor: "move",
+  })}>
+    <div>
       <div style={entityBaseStyle}>
         <div style={{
           borderBottom: "1px solid cornflowerblue",
         }}>
-          {props.entity.name}
+          {name}
         </div>
         <div style={attributesContainerStyle}>
           {
-            attributes.map(attribute => (<>
-              <div key={attribute.name} style={attributesRowStyle}>
-                <span>{attribute.name}</span>
-                <span>{attribute.type}</span>
+            attributes.map((attribute) => (
+              <div key={`Attribute: ${attribute.name}-${attribute.id}`}>
+                <div style={attributesRowStyle}>
+                  <span>{attribute.name}</span>
+                  <span>{attribute.type}</span>
+                </div>
               </div>
-            </>))
+            ))
           }
         </div>
       </div>
@@ -176,5 +242,5 @@ const Entity = observer((props: EntityProps) => {
         <button style={entityButtonStyle} onClick={close}>Close</button>
       </div>
     </Modal>
-  </>;
+  </div>;
 });
