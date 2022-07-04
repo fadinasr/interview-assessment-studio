@@ -1,52 +1,15 @@
-import React, { CSSProperties, useCallback, useContext, useState } from "react";
+import React, { useCallback, useContext, useState } from "react";
 import { observer } from "mobx-react";
-import { Entity as EntityData, EntityStore } from "../stores/entitystore";
-import { EntitiesContext } from "../index";
+import { EntitiesContext } from "../../index";
 import { useModal } from "react-hooks-use-modal";
 import { DragSourceMonitor, useDrag, useDrop } from "react-dnd";
-
-export const ItemTypes = {
-  ENTITY: "entity",
-};
-
-const entityContainerStyle: CSSProperties = {
-  position: "absolute" as const,
-};
-
-const entityBaseStyle: CSSProperties = {
-  border: "1px solid cornflowerblue",
-  borderRadius: 4,
-  padding: 5,
-  marginBottom: 5,
-};
-
-const attributesContainerStyle: CSSProperties = {
-  display: "flex",
-  flexDirection: "column" as const,
-  paddingTop: 5,
-};
-
-const attributesRowStyle: CSSProperties = {
-  display: "flex",
-  flexDirection: "row" as const,
-  justifyContent: "space-between",
-};
-
-const entityButtonStyle: CSSProperties = {
-  background: "cornflowerblue",
-  borderRadius: 4,
-  borderWidth: 0,
-  textAlign: "center" as const,
-  padding: 5,
-};
-
-const modalStyle: CSSProperties = {
-  background: "#fff",
-  width: "50rem",
-  height: "20rem",
-  padding: 20,
-  borderRadius: 20,
-};
+import {
+  attributesContainerStyle, attributesRowStyle, entityBaseStyle,
+  entityButtonStyle, entityContainerStyle, modalStyle,
+} from "./style";
+import { AttributeInterface, SelectOptionInterface } from "../../shared/interfaces";
+import { EntityProps, ItemTypes } from "../../shared/types";
+import { AttributeTypesEnum } from "../../shared/enums";
 
 export const EntityCanvas = observer(() => {
   const entityStore = useContext(EntitiesContext);
@@ -102,31 +65,6 @@ export const EntityCanvas = observer(() => {
   );
 });
 
-type EntityProps = {
-  entity: EntityData;
-  removeEntity: (id: number) => void;
-};
-
-interface AttributeInterface {
-  id: number;
-  name: string;
-  type: string;
-}
-
-enum AttributeTypesEnum {
-  "string" = "String",
-  "integer" = "Integer",
-  "binary" = "Binary",
-  "boolean" = "Boolean",
-  "long" = "Long",
-  "date" = "Date",
-}
-
-interface SelectOptionInterface {
-  title: AttributeTypesEnum;
-  value: string;
-  selected?: boolean;
-}
 
 const Entity = observer((props: EntityProps) => {
   const { id, x, y, width, height, name } = props.entity;
