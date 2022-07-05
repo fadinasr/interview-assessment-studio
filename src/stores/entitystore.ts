@@ -73,7 +73,7 @@ export class EntityStore {
         y,
         width: width || 150,
         height: height || 50,
-        attributes: attributes || []
+        attributes: attributes || [],
       }),
     );
   }
@@ -81,7 +81,7 @@ export class EntityStore {
   // Entities Setter
   setEntities = (entities: Entity[]) => {
     this.entities = entities;
-  }
+  };
 
   saveToLocalStorageReaction = () => {
     if (hasLocalStorage) {

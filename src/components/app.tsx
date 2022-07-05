@@ -9,7 +9,7 @@ export const App = observer(() => {
   // Check if the name of the new entity already exists
   const entityNameExists = (name: string) => {
     return entityStore.entities.find(entity => entity.name === name);
-  }
+  };
 
   // Add a new entity
   const onAddEntity = () => {
@@ -26,13 +26,13 @@ export const App = observer(() => {
   // ------------- Start - Dev Only -------------------
   // Save data on Canvas to local Storage (by hand - for testing purposes)
   const onSaveDataToLocalStorage = () => {
-    entityStore.saveToLocalStorageReaction()
-  }
+    entityStore.saveToLocalStorageReaction();
+  };
 
   // Load data from mock Services
   const onLoadFromLocalStorage = () => {
     entityStore.loadMockData();
-  }
+  };
   // ------------- End - Dev Only -------------------
 
   return (

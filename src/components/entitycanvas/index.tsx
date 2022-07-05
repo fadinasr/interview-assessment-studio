@@ -4,8 +4,22 @@ import { EntitiesContext } from "../../index";
 import { useModal } from "react-hooks-use-modal";
 import { DragSourceMonitor, useDrag, useDrop } from "react-dnd";
 import {
-  attributesContainerStyle, attributesRowStyle, entityBaseStyle,
-  entityButtonStyle, entityContainerStyle, modalStyle,
+  attributesContainerStyle,
+  attributesNameStyle,
+  attributesTypeStyle,
+  attributesRemoveButtonStyle,
+  attributesRowStyle,
+  entityBaseStyle,
+  entityButtonStyle,
+  entityContainerStyle,
+  entityHeaderStyle,
+  modalStyle,
+  modalButtonStyle,
+  modalButtonContainerStyle,
+  entityButtonsContainerStyle,
+  modalHeaderStyle,
+  modalRowStyle,
+  modalColumnStyle, formInputStyle, formLabelStyle,
 } from "./style";
 import { AttributeInterface, SelectOptionInterface } from "../../shared/interfaces";
 import { EntityProps, ItemTypes } from "../../shared/types";
@@ -75,7 +89,8 @@ export const EntityCanvas = observer(() => {
   return (
     <div ref={drop} style={{ width: "100%", height: "100%" }}>
       {entityStore.entities.map((entity) => (
-        <Entity entity={entity} key={entity.id} removeEntity={(id: number) => removeEntity(id)} saveEntityAttributes={(id, attributes) => saveEntityAttributes(id, attributes)}/>
+        <Entity entity={entity} key={entity.id} removeEntity={(id: number) => removeEntity(id)}
+                saveEntityAttributes={(id, attributes) => saveEntityAttributes(id, attributes)} />
       ))}
     </div>
   );
@@ -185,9 +200,7 @@ const Entity = observer((props: EntityProps) => {
   })}>
     <div>
       <div style={entityBaseStyle}>
-        <div style={{
-          borderBottom: "1px solid cornflowerblue",
-        }}>
+        <div style={entityHeaderStyle}>
           {name}
         </div>
         <div style={attributesContainerStyle}>
@@ -195,33 +208,51 @@ const Entity = observer((props: EntityProps) => {
             attributesArray.map((attribute) => (
               <div key={`Attribute: ${attribute.name}-${attribute.id}`}>
                 <div style={attributesRowStyle}>
-                  <span>{attribute.name}</span>
-                  <span>{attribute.type}</span>
+                  <div style={{ display: "flex", flexDirection: "row" }}>
+                    <span style={attributesNameStyle}>{attribute.name}</span>
+                  </div>
+                  <div style={{ width: "35%", display: "flex", flexDirection: "row", justifyContent: "space-between" }}>
+                    {/* @ts-ignore */}
+                    <span style={attributesTypeStyle}>{AttributeTypesEnum[attribute.type]}</span>
+                    <button style={attributesRemoveButtonStyle} onClick={() => removeAttribute(attribute.id)}>-</button>
+                  </div>
                 </div>
-                <button onClick={() => removeAttribute(attribute.id)}>-</button>
               </div>
             ))
           }
         </div>
       </div>
-      <button style={entityButtonStyle} onClick={open}>Add Attribute</button>
-      <button style={entityButtonStyle} onClick={() => props.removeEntity(id)}>Remove Entity</button>
+      <div style={entityButtonsContainerStyle}>
+        <button style={entityButtonStyle} onClick={open}>Add Attribute</button>
+        <button style={entityButtonStyle} onClick={() => props.removeEntity(id)}>Remove Entity</button>
+      </div>
     </div>
     <Modal>
       <div style={modalStyle}>
-        <h1>Add an Attribute</h1>
-        <div>
-          <input placeholder="Enter the attribute name!" name="name" value={newAttribute?.name} type="text"
-                 onChange={handleOnChange} />
-          <select name="type" value={newAttribute?.type} onChange={handleOnChange}>
-            {
-              SelectOptions.map(option => <option key={option.value} selected={option.selected}
-                                                  value={option.value}>{option.title}</option>)
-            }
-          </select>
+        <div style={modalHeaderStyle}>
+          <h1>Add an Attribute</h1>
         </div>
-        <button style={entityButtonStyle} onClick={addNewAttribute}>Add</button>
-        <button style={entityButtonStyle} onClick={close}>Close</button>
+        <div style={modalColumnStyle}>
+          <div style={modalRowStyle}>
+            <label style={formLabelStyle}>Name</label>
+            <input style={formInputStyle} placeholder="Enter the attribute name!" name="name" value={newAttribute?.name}
+                   type="text"
+                   onChange={handleOnChange} />
+          </div>
+          <div style={modalRowStyle}>
+            <label style={formLabelStyle}>Type</label>
+            <select style={formInputStyle} name="type" value={newAttribute?.type} onChange={handleOnChange}>
+              {
+                SelectOptions.map(option => <option key={option.value} selected={option.selected}
+                                                    value={option.value}>{option.title}</option>)
+              }
+            </select>
+          </div>
+        </div>
+        <div style={modalButtonContainerStyle}>
+          <button style={modalButtonStyle} onClick={addNewAttribute}>Add</button>
+          <button style={modalButtonStyle} onClick={close}>Close</button>
+        </div>
       </div>
     </Modal>
   </div>;
