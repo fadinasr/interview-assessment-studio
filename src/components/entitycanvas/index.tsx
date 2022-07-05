@@ -16,6 +16,7 @@ import { runInAction } from "mobx";
 export const EntityCanvas = observer(() => {
   const entityStore = useContext(EntitiesContext);
 
+  // Move entity handler which allows to set new Entities after dragging and dropping
   const moveEntity = useCallback(
     (id: number, left: number, top: number) => {
       runInAction(() => {
@@ -31,6 +32,7 @@ export const EntityCanvas = observer(() => {
     [entityStore.entities],
   );
 
+  // Drop handler
   const [, drop] = useDrop(
     () => ({
       accept: ItemTypes.ENTITY,
@@ -50,12 +52,14 @@ export const EntityCanvas = observer(() => {
     [],
   );
 
+  // Remove a specific entry from store
   const removeEntity = (id: number) => {
     runInAction(() => {
       entityStore.setEntities(entityStore.entities.filter(entity => entity.id !== id));
     });
   };
 
+  // Save entity attributes after adding or removing
   const saveEntityAttributes = (id: number, attributes: AttributeInterface[]) => {
     runInAction(() => {
       let entitiesClone = [...entityStore.entities];

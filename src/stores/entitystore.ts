@@ -55,6 +55,7 @@ export class EntityStore {
     this.entities = json.map((entityData) => new Entity(entityData));
   }
 
+  // Load from mock data services
   loadMockData() {
     this.loadJson(
       entitiesJSON.map(

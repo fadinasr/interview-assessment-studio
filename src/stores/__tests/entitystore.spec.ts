@@ -1,4 +1,6 @@
-import { EntityStore } from "../entitystore";
+import { Entity, EntityStore } from "../entitystore";
+import { EntityInterface } from "../../shared/interfaces";
+import { EntityObject } from "../../shared/types";
 
 describe("Entity store", () => {
   it("should load entities from json", () => {
@@ -30,11 +32,11 @@ describe("Entity store", () => {
     store.loadMockData();
 
     expect(store.entities.length).toBeGreaterThan(0);
-    expect(typeof store.entities).toEqual('object');
-    expect(store.entities[0]).toHaveProperty('id');
-    expect(store.entities[0]).toHaveProperty('name');
-    expect(store.entities[0]).toHaveProperty('x');
-    expect(store.entities[0]).toHaveProperty('y');
+    expect(typeof store.entities).toEqual("object");
+    expect(store.entities[0]).toHaveProperty("id");
+    expect(store.entities[0]).toHaveProperty("name");
+    expect(store.entities[0]).toHaveProperty("x");
+    expect(store.entities[0]).toHaveProperty("y");
   });
 
   it("should add entity", () => {
@@ -46,5 +48,30 @@ describe("Entity store", () => {
     expect(store.entities[0].name).toEqual("Foo");
     expect(store.entities[0].x).toEqual(42);
     expect(store.entities[0].y).toEqual(0);
+  });
+
+  it("should set entities from new data", () => {
+    let newEntities = new Entity({
+      id: 0,
+      name: "Car",
+      x: 100,
+      y: 100,
+      width: 50,
+      height: 25,
+      attributes: [
+        {
+          id: 1,
+          name: "brand",
+          type: "string",
+        },
+      ],
+    });
+    const store = new EntityStore();
+    store.setEntities([newEntities]);
+
+    expect(store.entities.length).toBeGreaterThan(0);
+    expect(store.entities.length).toEqual(1);
+    expect(store.entities[0]).toHaveProperty("id");
+    expect(store.entities[0].name).toEqual("Car");
   });
 });
