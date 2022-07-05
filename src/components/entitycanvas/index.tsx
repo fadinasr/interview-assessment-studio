@@ -10,39 +10,39 @@ import {
 import { AttributeInterface, SelectOptionInterface } from "../../shared/interfaces";
 import { EntityProps, ItemTypes } from "../../shared/types";
 import { AttributeTypesEnum } from "../../shared/enums";
+import { Entity as EntityData } from "../../stores/entitystore";
+import { runInAction } from "mobx";
 
 export const EntityCanvas = observer(() => {
   const entityStore = useContext(EntitiesContext);
-  const [entities, setEntities] = useState(entityStore.entities);
 
   const moveEntity = useCallback(
     (id: number, left: number, top: number) => {
-      let entitiesClone = [...entities];
-      const item = entitiesClone.find(item => item.id === id);
-      if (item) {
-        item.x = left;
-        item.y = top;
-      }
-      setEntities(entitiesClone);
+      runInAction(() => {
+        let entitiesClone = [...entityStore.entities];
+        const item = entitiesClone.find(item => item.id === id);
+        if (item) {
+          item.x = left;
+          item.y = top;
+        }
+        entityStore.setEntities(entitiesClone);
+      });
     },
-    [entities],
+    [entityStore.entities],
   );
 
   const [, drop] = useDrop(
     () => ({
       accept: ItemTypes.ENTITY,
-      drop(item, monitor) {
+      drop(item: EntityData, monitor) {
         const delta = monitor.getDifferenceFromInitialOffset() as {
           x: number
           y: number
         };
 
-        // @ts-ignore
         let left = Math.round(item.x + delta.x);
-        // @ts-ignore
         let top = Math.round(item.y + delta.y);
 
-        // @ts-ignore
         moveEntity(item.id, left, top);
         return undefined;
       },
@@ -51,15 +51,27 @@ export const EntityCanvas = observer(() => {
   );
 
   const removeEntity = (id: number) => {
-    let entitiesClone = [...entities];
-    entitiesClone = entitiesClone.filter(entity => entity.id !== id);
-    setEntities(entitiesClone);
+    runInAction(() => {
+      entityStore.setEntities(entityStore.entities.filter(entity => entity.id !== id));
+    });
+  };
+
+  const saveEntityAttributes = (id: number, attributes: AttributeInterface[]) => {
+    runInAction(() => {
+      let entitiesClone = [...entityStore.entities];
+      const item = entitiesClone.find((item) => item.id === id);
+
+      // @ts-ignore
+      item.attributes = attributes;
+
+      entityStore.setEntities(entitiesClone);
+    });
   };
 
   return (
     <div ref={drop} style={{ width: "100%", height: "100%" }}>
-      {entities.map((entity) => (
-        <Entity entity={entity} key={entity.id} removeEntity={() => removeEntity(entity.id)} />
+      {entityStore.entities.map((entity) => (
+        <Entity entity={entity} key={entity.id} removeEntity={(id: number) => removeEntity(id)} saveEntityAttributes={(id, attributes) => saveEntityAttributes(id, attributes)}/>
       ))}
     </div>
   );
@@ -67,13 +79,14 @@ export const EntityCanvas = observer(() => {
 
 
 const Entity = observer((props: EntityProps) => {
-  const { id, x, y, width, height, name } = props.entity;
+  const { id, x, y, width, height, name, attributes } = props.entity;
 
+  // Drag functionality
   const [{ isDragging }, drag] = useDrag(() => ({
       item: props.entity,
       type: ItemTypes.ENTITY,
       collect: (monitor: DragSourceMonitor) => ({
-        isDragging: monitor.isDragging(),
+        isDragging: monitor.isDragging(), // Flag to determine if item is dragging
       }),
     }),
     [id, x, y],
@@ -87,7 +100,7 @@ const Entity = observer((props: EntityProps) => {
   });
 
   // List of Attributes state initialization
-  const [attributes, setAttributes] = useState<AttributeInterface[]>([]);
+  const [attributesArray, setAttributes] = useState<AttributeInterface[]>(attributes);
 
   // Modal with open and close actions from a hook
   const [Modal, open, close] = useModal("root", {
@@ -114,7 +127,7 @@ const Entity = observer((props: EntityProps) => {
   // Adding a new attribute to the entity
   const addNewAttribute = async () => {
     // Clone attributes array
-    const attributesClone = [...attributes];
+    const attributesClone = [...attributesArray];
 
     // Check if new attribute exists
     const index = attributesClone.findIndex(item => item.name === newAttribute.name);
@@ -122,12 +135,15 @@ const Entity = observer((props: EntityProps) => {
 
     // Add the new attribute if it doesn't already exist
     if (index === -1) {
-      newAttribute.id = attributes.length + 1; // incrementing attribute ids
+      newAttribute.id = attributesArray.length + 1; // incrementing attribute ids
       attributesClone.push(newAttribute);
     }
 
     // Set new Array
     setAttributes(attributesClone);
+
+    // Save attributes to entry's data in store
+    props.saveEntityAttributes(id, attributesClone);
 
     // Clear input and return new attribute to default state
     setNewAttribute({
@@ -143,13 +159,16 @@ const Entity = observer((props: EntityProps) => {
   // Removing an attribute from the entity
   const removeAttribute = async (id: number) => {
     // Clone attributes array
-    let attributesClone = [...attributes];
+    let attributesClone = [...attributesArray];
 
     // Return the attributes except the deleted one
     attributesClone = attributesClone.filter(item => item.id !== id);
 
     // Set new Array
     setAttributes(attributesClone);
+
+    // Save attributes to entry's data in store
+    props.saveEntityAttributes(id, attributesClone);
   };
 
   return <div key={`Entity: ${name}-${id}`} ref={drag} style={Object.assign({}, entityContainerStyle, {
@@ -169,7 +188,7 @@ const Entity = observer((props: EntityProps) => {
         </div>
         <div style={attributesContainerStyle}>
           {
-            attributes.map((attribute) => (
+            attributesArray.map((attribute) => (
               <div key={`Attribute: ${attribute.name}-${attribute.id}`}>
                 <div style={attributesRowStyle}>
                   <span>{attribute.name}</span>

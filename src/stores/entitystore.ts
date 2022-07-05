@@ -1,31 +1,11 @@
 import { observable, action, computed, autorun, makeObservable } from "mobx";
+import { EntityObject } from "../shared/types";
+import { AttributeInterface, CoordInterface, EntityInterface } from "../shared/interfaces";
 
 const hasLocalStorage = typeof window !== "undefined" && window.localStorage;
 
 let entitiesJSON = require("../../static/entities.json");
 let coordsJSON = require("../../static/coords.json");
-
-type EntityObject = {
-  id?: number;
-  name: string;
-  x: number;
-  y: number;
-  width?: number;
-  height?: number;
-};
-
-interface EntityInterface {
-  id: number;
-  name: string;
-  width?: number;
-  height?: number;
-}
-
-interface CoordInterface {
-  id: number;
-  x: number;
-  y: number;
-}
 
 export class Entity {
   id = Math.random();
@@ -34,6 +14,7 @@ export class Entity {
   height = 50;
   x = 0;
   y = 0;
+  attributes = [];
 
   constructor(json: EntityObject) {
     makeObservable(this, {
@@ -42,14 +23,15 @@ export class Entity {
       y: observable,
       width: observable,
       height: observable,
+      attributes: observable,
       asJson: computed,
     });
     Object.assign(this, json);
   }
 
   get asJson() {
-    const { id, name, x, y, width, height } = this;
-    return { id, name, x, y, width, height };
+    const { id, name, x, y, width, height, attributes } = this;
+    return { id, name, x, y, width, height, attributes };
   }
 }
 
@@ -63,6 +45,7 @@ export class EntityStore {
       addEntity: action,
       loadMockData: action,
       loadFromLocalStorage: action,
+      setEntities: action,
       asJson: computed,
     });
     autorun(this.saveToLocalStorageReaction, { delay: 200 });
@@ -80,7 +63,8 @@ export class EntityStore {
     );
   }
 
-  addEntity(name: string, x: number, y: number, width?: number, height?: number) {
+  // Add a new entry
+  addEntity(name: string, x: number, y: number, width?: number, height?: number, attributes?: AttributeInterface[]) {
     this.entities.push(
       new Entity({
         name,
@@ -88,8 +72,14 @@ export class EntityStore {
         y,
         width: width || 150,
         height: height || 50,
+        attributes: attributes || []
       }),
     );
+  }
+
+  // Entities Setter
+  setEntities = (entities: Entity[]) => {
+    this.entities = entities;
   }
 
   saveToLocalStorageReaction = () => {

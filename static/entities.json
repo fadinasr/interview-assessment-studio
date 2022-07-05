@@ -3,7 +3,19 @@
     "id": 0,
     "name": "Car",
     "width": 50,
-    "height": 25
+    "height": 25,
+    "attributes": [
+      {
+        "id": 1,
+        "name": "brand",
+        "type": "string"
+      },
+      {
+        "id": 2,
+        "name": "manufacturingYear",
+        "type": "integer"
+      }
+    ]
   },
   {
     "id": 1,
