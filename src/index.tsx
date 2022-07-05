@@ -6,13 +6,15 @@ import { DndProvider } from "react-dnd";
 import { HTML5Backend } from "react-dnd-html5-backend";
 
 const entityStore = new EntityStore();
-entityStore.loadMockData();
+if (!entityStore.entities.length || entityStore.entities.length === 0) {
+  entityStore.loadFromLocalStorage();
+}
 
 export const EntitiesContext = createContext<EntityStore>(entityStore);
 
 ReactDOM.render(
   <EntitiesContext.Provider value={entityStore}>
-    <DndProvider debugMode={true} backend={HTML5Backend}>
+    <DndProvider backend={HTML5Backend}>
       <App />
     </DndProvider>
   </EntitiesContext.Provider>,
