@@ -1,7 +1,32 @@
-[{
+[
+  {
     "id": 0,
-    "name": "Car"
-}, {
+    "name": "Car",
+    "width": 50,
+    "height": 25,
+    "attributes": [
+      {
+        "id": 1,
+        "name": "brand",
+        "type": "string"
+      },
+      {
+        "id": 2,
+        "name": "manufacturingYear",
+        "type": "integer"
+      }
+    ]
+  },
+  {
     "id": 1,
     "name": "Wheels"
-}]
+  },
+  {
+    "id": 2,
+    "name": "Seats"
+  },
+  {
+    "id": 3,
+    "name": "Windows"
+  }
+]
